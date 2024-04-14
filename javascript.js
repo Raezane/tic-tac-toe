@@ -1,47 +1,83 @@
 const gameBoard = (function () {
     const board = [0,1,2,3,4,5,6,7,8];
+    
+    function showGameStatus() {
+        console.log(board);
+    }
 
-    return {board};
+    return {board, showGameStatus};
 
 })();
 
-function createPlayer (name) {
+const clickables = (function () {
+    const cells = document.querySelectorAll('.cell');
+    cells.forEach((cell) => {
+        cell.addEventListener('click', moveMade);
+    });
+})();
 
-    const playerName = name
-    
+function moveMade() {
+    this.textContent = 'ASD'
+};
+
+function Player (name, mark) {
+    this.name = name;
+    this.mark = mark;
+
     let score = 0;
 
+    const getMark = () => mark;
     const scoreUp = () => ++score;
     const getScore = () => score;
 
-    return {playerName, scoreUp, getScore};
+    return {name, getMark, scoreUp, getScore};
 };
 
-function Player(name, XorO) {
+function checkIfWon (whoseTurn) {
+    if (gameBoard.board[0] == whoseTurn && gameBoard.board[1] == whoseTurn && gameBoard.board[2] == whoseTurn) {
+        return true;
+    } else if (gameBoard.board[3] == whoseTurn && gameBoard.board[4] == whoseTurn && gameBoard.board[5] == whoseTurn) {
+        return true;
+    } else if (gameBoard.board[6] == whoseTurn && gameBoard.board[7] == whoseTurn && gameBoard.board[8] == whoseTurn) {
+        return true;
+    } else if (gameBoard.board[0] == whoseTurn && gameBoard.board[3] == whoseTurn && gameBoard.board[6] == whoseTurn) {
+        return true;
+    } else if (gameBoard.board[1] == whoseTurn && gameBoard.board[4] == whoseTurn && gameBoard.board[7] == whoseTurn) {
+        return true;
+    } else if (gameBoard.board[2] == whoseTurn && gameBoard.board[5] == whoseTurn && gameBoard.board[8] == whoseTurn) { 
+        return true;
+    } else if (gameBoard.board[0] == whoseTurn && gameBoard.board[4] == whoseTurn && gameBoard.board[8] == whoseTurn) { 
+        return true;
+    } else if (gameBoard.board[2] == whoseTurn && gameBoard.board[4] == whoseTurn && gameBoard.board[6] == whoseTurn) { 
+        return true;
+    };
 
-    const player = createPlayer(name);
-    const mark = XorO;
-};
-
-function clickHandler() {
-
+    return false;
 };
 
 const gameHandler = (function () {
-
-    let turns = 9;
     let playerOne = Player('playerO', 'O');
     let playerTwo = Player('playerX', 'X');
 
-    let whoseTurn = playerOne.mark;
+    let whoseTurn = playerTwo.getMark();
 
-    for (i = 1; i < 9; ++i) {
-
-        let move = Math.floor(Math.random()*8)
-
-        gameBoard.board[move] = whoseTurn;
-        
-        whoseTurn === playerOne.mark ? playerTwo.mark : playerOne.mark
-    }
+    gameBoard.board[4] = whoseTurn;
+    gameBoard.board[8] = whoseTurn;
+    gameBoard.board[0] = whoseTurn;
     
+        gameBoard.showGameStatus();
+        
+        if (checkIfWon(whoseTurn)) {
+            switch (whoseTurn) {
+                case playerOne.getMark():
+                    console.log('PlayerOne wins!');
+                    break;
+                case playerTwo.getMark():
+                    console.log('PlayerTwo wins!');
+                    break;
+                };
+            };
+    
+    whoseTurn === playerOne.getMark() ? whoseTurn = playerTwo.getMark() : whoseTurn = playerOne.getMark();
+
 })();
