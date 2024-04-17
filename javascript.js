@@ -9,15 +9,52 @@ const gameBoard = (function () {
 
 })();
 
-const clickables = (function () {
+const interactables = (function () {
+
+    const dialog = document.querySelector('dialog');
+    const close = document.querySelector('form > button');
+    const namePlayer1 = document.querySelector('#firstplayerName');
+    const namePlayer2 = document.querySelector('#secondplayerName');
+
+    const firstplayer = document.querySelector('.leftside > p:first-child');
+    const secondplayer = document.querySelector('.rightside > p:first-child');
+
     const cells = document.querySelectorAll('.cell');
+
+    close.addEventListener('click', createPlayers);
+    
     cells.forEach((cell) => {
-        cell.addEventListener('click', moveMade);
+        cell.addEventListener('click', gameHandler);
     });
+
+    return {namePlayer1, namePlayer2, dialog, close, firstplayer, secondplayer, cells};
 })();
 
-function moveMade() {
-    this.textContent = 'ASD'
+
+function createPlayers() {
+
+    let playerOne = Player(interactables.namePlayer1.value, 'O');
+    let playerTwo = Player(interactables.namePlayer2.value, 'X');
+
+    interactables.firstplayer.textContent = interactables.namePlayer1.value;
+    interactables.secondplayer.textContent = interactables.namePlayer2.value;
+
+    return {playerOne, playerTwo};
+
+};
+
+
+function gameHandler() {
+
+    console.log(interactables.cells);
+
+    let whoseTurn = createPlayers.playerOne
+
+    if (this.hasChildNodes() == false) {
+        let gamemark = document.createElement('p');
+        gamemark.textContent = 'O';
+        this.appendChild(gamemark);
+    };
 };
 
 function Player (name, mark) {
@@ -55,9 +92,13 @@ function checkIfWon (whoseTurn) {
     return false;
 };
 
-const gameHandler = (function () {
-    let playerOne = Player('playerO', 'O');
-    let playerTwo = Player('playerX', 'X');
+const startGame = (function () {
+
+    interactables.dialog.showModal();
+
+})();
+
+const adsdsd = (function () {
 
     let whoseTurn = playerTwo.getMark();
 
@@ -79,5 +120,7 @@ const gameHandler = (function () {
             };
     
     whoseTurn === playerOne.getMark() ? whoseTurn = playerTwo.getMark() : whoseTurn = playerOne.getMark();
+
+    return {playerOne, playerTwo}
 
 })();
