@@ -1,18 +1,16 @@
-const gameBoard = (function () {
-    const board = [0,1,2,3,4,5,6,7,8];
-    
-    function showGameStatus() {
-        console.log(board);
-    }
-
-    return {board, showGameStatus};
-
-})();
-
-const interactables = (function () {
+const startGame = (function () {
 
     const dialog = document.querySelector('dialog');
     const close = document.querySelector('form > button');
+
+    dialog.showModal();
+    close.addEventListener('click', initiateGame)
+
+})();
+
+
+function interactables () {
+
     const namePlayer1 = document.querySelector('#firstplayerName');
     const namePlayer2 = document.querySelector('#secondplayerName');
 
@@ -21,41 +19,64 @@ const interactables = (function () {
 
     const cells = document.querySelectorAll('.cell');
 
-    close.addEventListener('click', createPlayers);
-    
-    cells.forEach((cell) => {
-        cell.addEventListener('click', gameHandler);
-    });
-
-    return {namePlayer1, namePlayer2, dialog, close, firstplayer, secondplayer, cells};
-})();
+    return {namePlayer1, namePlayer2, firstplayer, secondplayer, cells};
+};
 
 
 function createPlayers() {
 
-    let playerOne = Player(interactables.namePlayer1.value, 'O');
-    let playerTwo = Player(interactables.namePlayer2.value, 'X');
+    const {firstplayer, secondplayer, namePlayer1, namePlayer2} = interactables()
 
-    interactables.firstplayer.textContent = interactables.namePlayer1.value;
-    interactables.secondplayer.textContent = interactables.namePlayer2.value;
+    playerOne = Player(namePlayer1.value, 'O');
+    playerTwo = Player(namePlayer2.value, 'X');
 
-    return {playerOne, playerTwo};
+    firstplayer.textContent = namePlayer1.value;
+    secondplayer.textContent = namePlayer2.value;
+
+    return [playerOne, playerTwo];
 
 };
 
 
-function gameHandler() {
+function initiateGame () {
+    
+    const {cells} = interactables();
 
-    console.log(interactables.cells);
+    let indexnumber = 0
+    cells.forEach((cell) => {
+        cell.setAttribute('cellIndex', indexnumber)
+        cell.addEventListener('click', checkIfEmpty);
+        indexnumber += 1;
+    });
 
-    let whoseTurn = createPlayers.playerOne
+    
+
+};
+
+function checkIfEmpty () {
+
+    const players = createPlayers();
+    console.log(players)
+
+    let whoseTurn = players[0].getMark();
+
+    const board = [0,1,2,3,4,5,6,7,8];
+    let gamemark;
+    let clickedCell;
 
     if (this.hasChildNodes() == false) {
         let gamemark = document.createElement('p');
         gamemark.textContent = 'O';
         this.appendChild(gamemark);
+        clickedCell = board[this.getAttribute('cellIndex')];
+        //find corresponding clicked cell and board index/number and update gameboard with gamemark
+        if (this.getAttribute('cellIndex') == clickedCell) {
+            board[clickedCell] = whoseTurn;
+        };
     };
+
 };
+
 
 function Player (name, mark) {
     this.name = name;
@@ -91,12 +112,6 @@ function checkIfWon (whoseTurn) {
 
     return false;
 };
-
-const startGame = (function () {
-
-    interactables.dialog.showModal();
-
-})();
 
 const adsdsd = (function () {
 
