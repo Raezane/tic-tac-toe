@@ -81,20 +81,20 @@ div > label {
 
 html,
 body {
-    height: 100vh;
+  height: 100vh;
 	width: 100vw;
 }
 
 .allcontainer {
-    height: 100vh;
-    width: 100vw;
-    display: grid;
-    grid-template-rows: 1fr 6fr;
+  height: 100vh;
+  width: 100vw;
+  display: grid;
+  grid-template-rows: 1fr 6fr;
 }
 
 .header {
-    grid-area: 1 / 1 / 2 / 2;
-    background-color: whitesmoke;
+  grid-area: 1 / 1 / 2 / 2;
+  background-color: whitesmoke;
 	display: flex;
 	justify-content: center;
 	align-items: center;
@@ -105,8 +105,8 @@ body {
 }
 
 .gamespace {
-    grid-area: 2 / 1 / 3 / 2;
-    background-color:rgb(185, 185, 185, 0.427);
+  grid-area: 2 / 1 / 3 / 2;
+  background-color:rgb(185, 185, 185, 0.427);
 	display: flex;
 	width: 100vw;
 }
@@ -119,6 +119,15 @@ body {
 	font-size: 2em;
 	overflow-wrap: break-word;
 	text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.rightside > p:first-child,
+.leftside > p:first-child {
+  height: 250px;
+  overflow: auto;
 }
 
 .center {
@@ -126,27 +135,33 @@ body {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	
 }
 
 .gamestatus {
 	min-height: 15%;
-	max-height: 20%;
+	max-height: 170px;
+  display: flex;
+  font-size: min(3cqb, 110px);
+  overflow-wrap: break-word;
+  max-width: 300px;
+  overflow: auto;
+  flex-shrink: 0;
+  align-items: center;
 }
 
 .gamegrid {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
 	grid-template-rows: repeat(3, 1fr);
-	width: 100%;
-	height: 80%;
-	max-width: 450px;
+	width: 75%;
+	height: 60%;
+	max-width: 420px;
 	max-height: 450px;
 	min-width: 300px;
 	min-height: 300px;
 	border: 2px solid rgb(0, 0, 0, 0.498);
 	border-radius: 10px;
-	margin-bottom: 100px;
+  position: relative;
 	
 }
 
@@ -155,6 +170,7 @@ body {
 	align-items: center;
 	justify-content: center;
 	position: relative;
+  font-size: min(12cqb, 110px);
 	
 }
 
@@ -178,4 +194,10 @@ body {
 .cell6,
 .cell7 {
 	border-right: 2px solid rgb(0, 0, 0, 0.498);
+}
+
+.center > button {
+  margin-top: 50px;
+  height: 50px;
+  width: 150px;
 }

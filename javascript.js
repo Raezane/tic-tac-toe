@@ -5,44 +5,75 @@
     dialog : document.querySelector('dialog'),
     close : document.querySelector('form > button'),
 
+    gamestatus : document.querySelector('.gamestatus'),
+
     namePlayer1: document.querySelector('#firstplayerName'),
     namePlayer2 : document.querySelector('#secondplayerName'),
 
     firstplayer : document.querySelector('.leftside > p:first-child'),
     secondplayer : document.querySelector('.rightside > p:first-child'),
 
-    cells : document.querySelectorAll('.cell')
+    playerOneScore : document.querySelector('.leftside > p:nth-child(3)'),
+    playerTwoScore : document.querySelector('.rightside > p:nth-child(3)'),
+
+    cells : document.querySelectorAll('.cell'),
+
+    retry : document.querySelector('.center > button')
   };
 
   const playerManagement = { 
 
     playerOne: undefined,
     playerTwo: undefined,
+    playersCreated: false,
+    turn: undefined,
+    numberOfTurn: 0,
 
     createPlayers: function () {
-      this.playerOne = Player(domElements.namePlayer1.value, 'O');
-      this.playerTwo = Player(domElements.namePlayer2.value, 'X');
 
+      let playerOneName = domElements.namePlayer1.value;
+      let playerTwoName = domElements.namePlayer2.value;
+
+      //if given name is empty, then name will be Player 1 and/or Player Two
+      playerOneName == '' ? this.playerOne = Player('Player One', 'O') : this.playerOne = Player(playerOneName, 'O');
+      playerTwoName == '' ? this.playerTwo = Player('Player Two', 'X') : this.playerTwo = Player(playerTwoName, 'X');
     },
 
     addPlayerNames: function () {
-      domElements.firstplayer.textContent = domElements.namePlayer1.value,
-      domElements.secondplayer.textContent = domElements.namePlayer2.value
+      domElements.firstplayer.textContent = this.playerOne.name,
+      domElements.secondplayer.textContent = this.playerTwo.name
+    },
+
+    changeTurn: function () {
+      (this.turn == undefined || this.turn == this.playerTwo) ? this.turn = this.playerOne : this.turn = this.playerTwo;
+    },
+
+    emptyTurns: function () {
+      this.numberOfTurn = 0;
+    },
+
+    addTurn: function () {
+      this.numberOfTurn += 1;
     }
+
   };
 
   const gameBoard = {
 
     board: [0,1,2,3,4,5,6,7,8], 
 
-    getBoard: () => board,
     setPlayerMark: function(mark) {
-      board[4] = mark;
+      this.board[4] = mark;
+    },
+
+    resetBoard: function() {
+      this.board = [0,1,2,3,4,5,6,7,8];
     }
   };
 
   const startGame = (function () {
 
+    domElements.retry.style.display = 'none';
     domElements.dialog.showModal();
     domElements.close.addEventListener('click', gameHandler);
 
@@ -50,13 +81,17 @@
 
   function gameHandler () {
     
-    playerManagement.createPlayers();
-    playerManagement.addPlayerNames();
-
-    const cells = domElements.cells;
+    if (playerManagement.playersCreated == false) {
+      playerManagement.createPlayers();
+      playerManagement.addPlayerNames();
+      playerManagement.playersCreated = true;
+    };
+    
+    playerManagement.changeTurn();
+    domElements.gamestatus.textContent = `${playerManagement.turn.name}'s Turn!`;
 
     let indexnumber = 0
-    cells.forEach((cell) => {
+    domElements.cells.forEach((cell) => {
       cell.setAttribute('cellIndex', indexnumber)
       cell.addEventListener('click', checkIfEmpty);
       indexnumber += 1;
@@ -78,86 +113,90 @@
 
   };
 
-  function checkIfEmpty (e) {
+  function checkIfEmpty () {
 
-    console.log(playerManagement.playerOne);
-
-    console.log(board.getBoard());
-    const players = createPlayers();
-
-    console.log(players)
-
-    let whoseTurn = players[0].getMark();
-    board.setPlayerMark(whoseTurn);
-    console.log(board.getBoard());
-
-    let gamemark;
-    let clickedCell;
+    whoseTurn = playerManagement.turn.getMark()
 
     if (this.hasChildNodes() == false) {
-      let gamemark = document.createElement('p');
-      gamemark.textContent = whoseTurn;
-      this.appendChild(gamemark);
-      clickedCell = board[this.getAttribute('cellIndex')];
-      //find corresponding clicked cell and board index/number and update board with gamemark
-      if (this.getAttribute('cellIndex') == clickedCell) {
-        board[clickedCell] = whoseTurn;
+      PlayerMove(whoseTurn, this);
+      if (checkIfWon(whoseTurn) == false) {
+        playerManagement.changeTurn();
+      };
+      playerManagement.addTurn();
+      domElements.gamestatus.textContent = `${playerManagement.turn.name}'s Turn!`;
+
+    };
+
+    if (playerManagement.numberOfTurn >= 5) {
+      if (checkIfWon(whoseTurn)) {
+        
+        domElements.gamestatus.textContent = `${playerManagement.turn.name} WINS!!!`
+        playerManagement.turn.scoreUp();
+        
+        playerManagement.turn == playerManagement.playerOne ? domElements.playerOneScore.textContent = playerManagement.playerOne.getScore()
+        : domElements.playerTwoScore.textContent = playerManagement.playerTwo.getScore();
+    
+        removeCellListeners();
+
+        domElements.retry.style.display = 'block';
+        domElements.retry.addEventListener('click', startNewRound);
       };
     };
   };
 
+  function removeCellListeners() {
+    domElements.cells.forEach((cell) => {
+      cell.removeEventListener('click', checkIfEmpty);
+    });
+  };
+
+  function startNewRound() {
+    gameBoard.resetBoard();
+    
+    domElements.retry.style.display = 'none';
+    domElements.cells.forEach((cell) => {
+      cell.textContent = '';
+    });
+    playerManagement.emptyTurns();
+    gameHandler();
+    
+  }
+
+  function PlayerMove (whoseTurn, currentCell) {
+
+    let gamemark = document.createElement('p');
+    gamemark.textContent = whoseTurn;
+    currentCell.appendChild(gamemark);
+    let clickedCell = gameBoard.board[currentCell.getAttribute('cellIndex')];
+    
+    //find corresponding clicked cell and board index/number and update board with gamemark
+    if (currentCell.getAttribute('cellIndex') == clickedCell) {
+      gameBoard.board[clickedCell] = whoseTurn;
+    };
+
+  };
+
 
   function checkIfWon (whoseTurn) {
-    if (board.board[0] == whoseTurn && board.board[1] == whoseTurn && board.board[2] == whoseTurn) {
+    if (gameBoard.board[0] == whoseTurn && gameBoard.board[1] == whoseTurn && gameBoard.board[2] == whoseTurn) {
         return true;
-    } else if (board.board[3] == whoseTurn && board.board[4] == whoseTurn && board.board[5] == whoseTurn) {
+    } else if (gameBoard.board[3] == whoseTurn && gameBoard.board[4] == whoseTurn && gameBoard.board[5] == whoseTurn) {
         return true;
-    } else if (board.board[6] == whoseTurn && board.board[7] == whoseTurn && board.board[8] == whoseTurn) {
+    } else if (gameBoard.board[6] == whoseTurn && gameBoard.board[7] == whoseTurn && gameBoard.board[8] == whoseTurn) {
         return true;
-    } else if (board.board[0] == whoseTurn && board.board[3] == whoseTurn && board.board[6] == whoseTurn) {
+    } else if (gameBoard.board[0] == whoseTurn && gameBoard.board[3] == whoseTurn && gameBoard.board[6] == whoseTurn) {
         return true;
-    } else if (board.board[1] == whoseTurn && board.board[4] == whoseTurn && board.board[7] == whoseTurn) {
+    } else if (gameBoard.board[1] == whoseTurn && gameBoard.board[4] == whoseTurn && gameBoard.board[7] == whoseTurn) {
         return true;
-    } else if (board.board[2] == whoseTurn && board.board[5] == whoseTurn && board.board[8] == whoseTurn) { 
+    } else if (gameBoard.board[2] == whoseTurn && gameBoard.board[5] == whoseTurn && gameBoard.board[8] == whoseTurn) { 
         return true;
-    } else if (board.board[0] == whoseTurn && board.board[4] == whoseTurn && board.board[8] == whoseTurn) { 
+    } else if (gameBoard.board[0] == whoseTurn && gameBoard.board[4] == whoseTurn && gameBoard.board[8] == whoseTurn) { 
         return true;
-    } else if (board.board[2] == whoseTurn && board.board[4] == whoseTurn && board.board[6] == whoseTurn) { 
+    } else if (gameBoard.board[2] == whoseTurn && gameBoard.board[4] == whoseTurn && gameBoard.board[6] == whoseTurn) { 
         return true;
       };
 
     return false;
   };
-
-  /*
-
-  const adsdsd = (function () {
-
-      let whoseTurn = playerTwo.getMark();
-
-      board.board[4] = whoseTurn;
-      board.board[8] = whoseTurn;
-      board.board[0] = whoseTurn;
-      
-          board.showGameStatus();
-          
-          if (checkIfWon(whoseTurn)) {
-              switch (whoseTurn) {
-                  case playerOne.getMark():
-                      console.log('PlayerOne wins!');
-                      break;
-                  case playerTwo.getMark():
-                      console.log('PlayerTwo wins!');
-                      break;
-                  };
-              };
-      
-      whoseTurn === playerOne.getMark() ? whoseTurn = playerTwo.getMark() : whoseTurn = playerOne.getMark();
-
-      return {playerOne, playerTwo}
-
-  })();
-
-  */
 
 })();
