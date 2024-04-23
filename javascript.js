@@ -21,6 +21,36 @@
     retry : document.querySelector('.center > button')
   };
 
+  //Game starts here, by asking player names
+  const startGame = (function () {
+
+    domElements.retry.style.display = 'none';
+    domElements.dialog.showModal();
+    domElements.close.addEventListener('click', setPlayers);
+
+  })();
+
+  function setPlayers () {
+    
+    //check if players are already created when taking a new round
+    if (playerManagement.playersCreated == false) {
+      playerManagement.createPlayers();
+      playerManagement.addPlayerNames();
+      playerManagement.playersCreated = true;
+    };
+    
+    playerManagement.changeTurn();
+    domElements.gamestatus.textContent = `${playerManagement.turn.name}'s Turn!`;
+
+    let indexnumber = 0
+    domElements.cells.forEach((cell) => {
+      cell.setAttribute('cellIndex', indexnumber)
+      cell.addEventListener('click', gameHandler);
+      indexnumber += 1;
+    });
+
+  };
+
   const playerManagement = { 
 
     playerOne: undefined,
@@ -54,6 +84,10 @@
 
     addTurn: function () {
       this.numberOfTurn += 1;
+    },
+
+    getNumberOfTurn: function () {
+      return this.numberOfTurn
     }
 
   };
@@ -71,34 +105,6 @@
     }
   };
 
-  const startGame = (function () {
-
-    domElements.retry.style.display = 'none';
-    domElements.dialog.showModal();
-    domElements.close.addEventListener('click', gameHandler);
-
-  })();
-
-  function gameHandler () {
-    
-    if (playerManagement.playersCreated == false) {
-      playerManagement.createPlayers();
-      playerManagement.addPlayerNames();
-      playerManagement.playersCreated = true;
-    };
-    
-    playerManagement.changeTurn();
-    domElements.gamestatus.textContent = `${playerManagement.turn.name}'s Turn!`;
-
-    let indexnumber = 0
-    domElements.cells.forEach((cell) => {
-      cell.setAttribute('cellIndex', indexnumber)
-      cell.addEventListener('click', checkIfEmpty);
-      indexnumber += 1;
-    });
-
-  };
-
   function Player (name, mark) {
     this.name = name;
     this.mark = mark;
@@ -113,7 +119,7 @@
 
   };
 
-  function checkIfEmpty () {
+  function gameHandler () {
 
     whoseTurn = playerManagement.turn.getMark()
 
@@ -131,6 +137,7 @@
       if (checkIfWon(whoseTurn)) {
         
         domElements.gamestatus.textContent = `${playerManagement.turn.name} WINS!!!`
+        domElements.gamestatus.style.color = `green`;
         playerManagement.turn.scoreUp();
         
         playerManagement.turn == playerManagement.playerOne ? domElements.playerOneScore.textContent = playerManagement.playerOne.getScore()
@@ -140,25 +147,37 @@
 
         domElements.retry.style.display = 'block';
         domElements.retry.addEventListener('click', startNewRound);
+      }
+
+      else if (checkIfDraw()) {
+
+        domElements.gamestatus.textContent = `IT'S A DRAW!`;
+        domElements.gamestatus.style.color = `orange`;
+    
+        removeCellListeners();
+
+        domElements.retry.style.display = 'block';
+        domElements.retry.addEventListener('click', startNewRound);
+
       };
     };
   };
 
   function removeCellListeners() {
     domElements.cells.forEach((cell) => {
-      cell.removeEventListener('click', checkIfEmpty);
+      cell.removeEventListener('click', gameHandler);
     });
   };
 
   function startNewRound() {
     gameBoard.resetBoard();
-    
+    domElements.gamestatus.style.color = 'black';
     domElements.retry.style.display = 'none';
     domElements.cells.forEach((cell) => {
       cell.textContent = '';
     });
     playerManagement.emptyTurns();
-    gameHandler();
+    setPlayers();
     
   }
 
@@ -175,6 +194,13 @@
     };
 
   };
+
+  function checkIfDraw() {
+    if (playerManagement.getNumberOfTurn() === 9) {
+      return true;
+    }
+    return false;
+  }
 
 
   function checkIfWon (whoseTurn) {
